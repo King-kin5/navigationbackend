@@ -9,10 +9,19 @@ class Settings(BaseSettings):
     DATABASE_URL: str
    
     # Application settings
-    SECRET_KEY: str
     ENVIRONMENT: str = "development"
     DEBUG: bool = False
-   
+       # Server settings
+    HOST: str = "0.0.0.0"
+    PORT: int = 8000
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="allow",
+        case_sensitive=True
+    )
+
     @field_validator('ENVIRONMENT')
     def validate_environment(cls, v: str) -> str:
         """Validate environment setting"""

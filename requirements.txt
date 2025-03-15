@@ -1,2 +1,5 @@
-geopy
-fuzzywuzzy
+fastapi
+uvicorn
+sqlalchemy
+psycopg2-binary
+pydantic
