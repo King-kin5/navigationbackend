@@ -5,3 +5,5 @@ psycopg2-binary
 pydantic
 gunicorn
 sqlalchemy_utils
+pydantic_settings
+pydantic
