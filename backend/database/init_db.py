@@ -11,12 +11,12 @@ logger = logging.getLogger(__name__)
 # Default to external database for local development
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://navigator_gha2_user:lF76eUglfDMtDKET7x8fV3otkAfXW0gU@dpg-cva9fkqj1k6c73e4futg-a.oregon-postgres.render.com/navigator_gha2"
+    "postgresql://navigation_user:lBiFojoIkQjaCZHWobTfuMprbj3T4UPx@dpg-cvevuv5svqrc73crb430-a.oregon-postgres.render.com/navigation"
 )
 
 # Use the internal database URL in production
 if os.getenv("RENDER_INTERNAL_HOSTNAME"):  # Render sets this automatically
-    DATABASE_URL = "postgresql://navigator_gha2_user:lF76eUglfDMtDKET7x8fV3otkAfXW0gU@dpg-cva9fkqj1k6c73e4futg-a/navigator_gha2"
+    DATABASE_URL = "postgresql://navigation_user:lBiFojoIkQjaCZHWobTfuMprbj3T4UPx@dpg-cvevuv5svqrc73crb430-a/navigation"
 
 
 # Create declarative base instance

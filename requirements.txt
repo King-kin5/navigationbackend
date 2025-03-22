@@ -7,3 +7,4 @@ gunicorn
 sqlalchemy_utils
 pydantic_settings
 pydantic
+json

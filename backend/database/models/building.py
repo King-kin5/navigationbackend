@@ -12,5 +12,5 @@ class Building(Base):
     description = Column(String, nullable=False)
     #image = Column(String, nullable=True)
     facilities = Column(ARRAY(String), nullable=True)
-    lat = Column(Float, nullable=True)
-    lng = Column(Float, nullable=True)
+    coordinates = Column(String, nullable=True)
+    
