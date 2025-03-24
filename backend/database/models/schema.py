@@ -1,20 +1,27 @@
 import json
 from pydantic import BaseModel, validator
 from typing import Optional, List
+
 class BuildingBase(BaseModel):
     name: str
     department: str
     description: str
     #image: Optional[str] = None
     facilities: Optional[List[str]] = None
-    coordinates:str
+    coordinates: dict  # Now a dictionary
 
-    # Validator to handle coordinate conversion
+    # If coordinates come in as a JSON string, convert them to a dict.
     @validator("coordinates", pre=True)
     def validate_coordinates(cls, v):
-        if isinstance(v, dict):
-            return json.dumps(v)  # Convert dict to JSON string
+        if isinstance(v, str):
+            try:
+                return json.loads(v)
+            except Exception:
+                raise ValueError("Invalid JSON for coordinates")
         return v
+
+class BuildingCreate(BuildingBase):
+    pass
 
 class BuildingUpdate(BaseModel):
     slug: Optional[str] = None
@@ -22,13 +29,7 @@ class BuildingUpdate(BaseModel):
     department: Optional[str] = None
     description: Optional[str] = None
     facilities: Optional[List[str]] = None
-    coordinates: Optional[str] = None
-
-class BuildingCreate(BuildingBase):
-    pass
-
-
-
+    coordinates: Optional[dict] = None  # Now a dictionary
 
 class Building(BuildingBase):
     class Config:

@@ -165,33 +165,30 @@ def seed_database():
     
     try:
         # Clear existing data
-        #db.query(Building).delete()
+        db.query(Building).delete()
         
         # Insert new data
         for building_data in buildings_data:
-            # Generate slug from name
-            slug = slugify(building_data["name"])
-            coordinates_json = json.dumps(building_data["coordinates"])
+          # Generate slug from name
+          slug = slugify(building_data["name"])
             
-            building = Building(
-                id=building_data["id"],
-                slug=slug,
-                name=building_data["name"],
-                department=building_data["department"],
-                description=building_data["description"],
-                #image=building_data["image"],
-                facilities=building_data["facilities"],
-                coordinates=coordinates_json 
-            )
-            db.add(building)
+          building = Building(
+            id=building_data["id"],
+            slug=slug,
+            name=building_data["name"],
+            department=building_data["department"],
+            description=building_data["description"],
+            facilities=building_data["facilities"],
+            coordinates=building_data["coordinates"]  # Directly store dict
+          )
+          db.add(building)
         
         db.commit()
         print(f"Successfully seeded {len(buildings_data)} buildings")
     except Exception as e:
-        db.rollback()
-        print(f"Error seeding database: {e}")
+      db.rollback()
+      print(f"Error seeding database: {e}")
     finally:
-        db.close()
-
+      db.close()
 if __name__ == "__main__":
     seed_database()

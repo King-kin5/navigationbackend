@@ -12,5 +12,5 @@ class Building(Base):
     description = Column(String, nullable=False)
     #image = Column(String, nullable=True)
     facilities = Column(ARRAY(String), nullable=True)
-    coordinates = Column(String, nullable=True)
+    coordinates = Column(JSON, nullable=True)
     

@@ -18,8 +18,6 @@ DATABASE_URL = os.getenv(
 if os.getenv("RENDER_INTERNAL_HOSTNAME"):  # Render sets this automatically
     DATABASE_URL = "postgresql://navigation_user:lBiFojoIkQjaCZHWobTfuMprbj3T4UPx@dpg-cvevuv5svqrc73crb430-a/navigation"
 
-
-# Create declarative base instance
 Base = declarative_base()
 
 def get_engine(url=DATABASE_URL):
