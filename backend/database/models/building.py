@@ -10,7 +10,7 @@ class Building(Base):
     name = Column(String, nullable=False)
     department = Column(String, nullable=False)
     description = Column(String, nullable=False)
-    #image = Column(String, nullable=True)
+    image =    Column(String, nullable=True)
     facilities = Column(ARRAY(String), nullable=True)
     coordinates = Column(JSON, nullable=True)
     

@@ -1,11 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend import seed_data
-
+from fastapi.staticfiles import StaticFiles
 from backend.database.config import init_database, test_database_connection
 from backend.routes import building
 from backend.core.config import settings
 import logging
+import os
 
 # Configure logging
 logging.basicConfig(
@@ -27,7 +28,11 @@ def create_application() -> FastAPI:
         description="Navigation",
         version="0.1.0",
     )
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    STATIC_DIR = os.path.join(BASE_DIR, "static")
+    os.makedirs(os.path.join(STATIC_DIR, "images", "buildings"), exist_ok=True)
 
+    app.mount("/images", StaticFiles(directory=os.path.join(STATIC_DIR, "images")), name="images")
     # Include the API routes
     app.include_router(building.router, prefix="/buildings", tags=["buildings"])
     
@@ -72,7 +77,6 @@ async def shutdown_event():
     except Exception as e:
         logger.error(f"Application shutdown failed: {e}")
         raise
-
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(

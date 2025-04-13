@@ -6,7 +6,7 @@ class BuildingBase(BaseModel):
     name: str
     department: str
     description: str
-    #image: Optional[str] = None
+    image: Optional[str] = None
     facilities: Optional[List[str]] = None
     coordinates: dict  # Now a dictionary
 
@@ -29,6 +29,7 @@ class BuildingUpdate(BaseModel):
     department: Optional[str] = None
     description: Optional[str] = None
     facilities: Optional[List[str]] = None
+    image: Optional[str] = None
     coordinates: Optional[dict] = None  # Now a dictionary
 
 class Building(BuildingBase):
