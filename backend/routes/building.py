@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Response
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Response, Body
 from sqlalchemy.orm import Session
 import json
 import base64
@@ -190,7 +190,7 @@ async def update_building(
     department: Optional[str] = Form(None),
     description: Optional[str] = Form(None),
     facilities: Optional[List[str]] = Form(None),
-    coordinates: Optional[Dict] = Form(None),
+    coordinates: Optional[Dict] = Body(None),
     file: Optional[UploadFile] = File(None, description="Optional image file"),
     db: Session = Depends(get_db)
 ):
