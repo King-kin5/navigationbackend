@@ -42,7 +42,7 @@ async def create_building(
     department: str = Body(...),
     description: str = Body(...),
     facilities: List[str] = Body(...),
-    coordinates: Dict = Body(...),
+    coordinates: dict = Body(...),
     file: Optional[UploadFile] = File(None, description="Optional image file"),
     db: Session = Depends(get_db)
 ):
@@ -53,6 +53,14 @@ async def create_building(
     existing = db.query(Building).filter(Building.slug == slug).first()
     if existing:
         raise HTTPException(status_code=400, detail="Building with this slug already exists")
+
+    # Validate coordinates
+    if not isinstance(coordinates, dict):
+        raise HTTPException(status_code=400, detail="Coordinates must be a dictionary")
+    if "lat" not in coordinates or "lng" not in coordinates:
+        raise HTTPException(status_code=400, detail="Coordinates must contain 'lat' and 'lng' keys")
+    if not isinstance(coordinates["lat"], (int, float)) or not isinstance(coordinates["lng"], (int, float)):
+        raise HTTPException(status_code=400, detail="Coordinates values must be numbers")
 
     # Process image if uploaded
     image_filename = None
