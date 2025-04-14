@@ -190,7 +190,7 @@ async def update_building(
     department: Optional[str] = Body(None),
     description: Optional[str] = Body(None),
     facilities: Optional[List[str]] = Body(None),
-    coordinates: Optional[Dict] = Body(None),
+    coordinates: Optional[Dict[str, float]] = Body(None),
     file: Optional[UploadFile] = File(None, description="Optional image file"),
     db: Session = Depends(get_db)
 ):
@@ -227,6 +227,8 @@ async def update_building(
     if facilities is not None:
         building.facilities = facilities
     if coordinates is not None:
+        if not isinstance(coordinates, dict) or 'lat' not in coordinates or 'lng' not in coordinates:
+            raise HTTPException(status_code=400, detail="Coordinates must be a dictionary with 'lat' and 'lng' keys")
         building.coordinates = coordinates
     
     db.commit()
