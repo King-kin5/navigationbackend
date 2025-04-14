@@ -256,39 +256,46 @@ async def update_building(
 @router.put("/{slug}/data", response_model=BuildingBase)
 async def update_building_data(
     slug: str,
-    building_data: BuildingUpdate,
+    name: Optional[str] = Body(None),
+    department: Optional[str] = Body(None),
+    description: Optional[str] = Body(None),
+    facilities: Optional[List[str]] = Body(None),
+    coordinates: Optional[Dict[str, float]] = Body(None),
     db: Session = Depends(get_db)
 ):
+    # Find the building
     building = db.query(Building).filter(Building.slug == slug).first()
-    
     if not building:
         raise HTTPException(status_code=404, detail="Building not found")
-    
-    # Update only the fields that were provided
-    if building_data.name is not None:
-        building.name = building_data.name
-    if building_data.department is not None:
-        building.department = building_data.department
-    if building_data.description is not None:
-        building.description = building_data.description
-    if building_data.facilities is not None:
-        building.facilities = building_data.facilities
-    if building_data.coordinates is not None:
-        building.coordinates = building_data.coordinates
-    
-    db.commit()
-    db.refresh(building)
-    
-    # Generate image URL
-    image_url = f"/api/buildings/image/{building.image}" if building.image_data else None
-    
+
+    # Update only the provided fields
+    if name is not None:
+        building.name = name
+        # Update slug if name changes
+        building.slug = slugify(name)
+    if department is not None:
+        building.department = department
+    if description is not None:
+        building.description = description
+    if facilities is not None:
+        building.facilities = facilities
+    if coordinates is not None:
+        building.coordinates = coordinates
+
+    try:
+        db.commit()
+        db.refresh(building)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error updating building: {str(e)}")
+
     return {
         "id": building.id,
         "slug": building.slug,
         "name": building.name,
         "department": building.department,
         "description": building.description,
-        "image": image_url,
+        "image": f"/api/buildings/image/{building.image}" if building.image else None,
         "facilities": building.facilities,
-        "coordinates": building.coordinates if building.coordinates else {}
+        "coordinates": building.coordinates
     }
