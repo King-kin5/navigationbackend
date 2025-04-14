@@ -38,12 +38,16 @@ def delete_building_image(slug: str, db: Session = Depends(get_db)):
 
 @router.post("/buildings/create", response_model=BuildingBase)
 async def create_building(
-    building_data: BuildingCreate = Body(...),
+    name: str = Body(...),
+    department: str = Body(...),
+    description: str = Body(...),
+    facilities: List[str] = Body(...),
+    coordinates: Dict = Body(...),
     file: Optional[UploadFile] = File(None, description="Optional image file"),
     db: Session = Depends(get_db)
 ):
     # Generate slug from name
-    slug = slugify(building_data.name)
+    slug = slugify(name)
     
     # Check for existing building
     existing = db.query(Building).filter(Building.slug == slug).first()
@@ -74,14 +78,14 @@ async def create_building(
     building = Building(
         id=slug,
         slug=slug,
-        name=building_data.name,
-        department=building_data.department,
-        description=building_data.description,
+        name=name,
+        department=department,
+        description=description,
         image=image_filename,
         image_data=image_data,
         mime_type=mime_type,
-        facilities=building_data.facilities,
-        coordinates=building_data.coordinates
+        facilities=facilities,
+        coordinates=coordinates
     )
     
     try:
