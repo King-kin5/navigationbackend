@@ -8,4 +8,5 @@ sqlalchemy_utils
 pydantic_settings
 pydantic
 python-multipart  
-aiofiles          
+aiofiles     
+PIL     
