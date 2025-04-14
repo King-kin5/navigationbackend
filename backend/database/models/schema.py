@@ -38,5 +38,14 @@ class BuildingUpdate(BaseModel):
     facilities: Optional[List[str]] = None
     coordinates: Optional[Dict] = None
 
+    @validator('coordinates')
+    def validate_coordinates(cls, v):
+        if v is not None and not isinstance(v, dict):
+            raise ValueError('Coordinates must be a valid JSON object')
+        return v
+
+    class Config:
+        orm_mode = True
+
 class Building(BuildingBase):
     pass
