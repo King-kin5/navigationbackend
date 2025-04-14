@@ -47,7 +47,7 @@ def create_application() -> FastAPI:
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
     
     # Include the API routes
-    app.include_router(building.router, prefix="/api", tags=["buildings"])
+    app.include_router(building.router, prefix="api/", tags=["buildings"])
     
     return app
 

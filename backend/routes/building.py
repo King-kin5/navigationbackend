@@ -116,7 +116,7 @@ async def add_building_image(
         "name": building.name,
         "department": building.department,
         "description": building.description,
-        "image": f"/api/buildings/image/{building.image}",
+        "image": f"api/buildings/image/{building.image}",
         "facilities": building.facilities,
         "coordinates": building.coordinates
     }
@@ -168,7 +168,7 @@ def get_building_by_slug(slug: str, db: Session = Depends(get_db)):
     # Generate image URL if image_data exists
     image_url = None
     if building.image_data:
-        image_url = f"/api/buildings/image/{building.image}"
+        image_url = f"api/buildings/image/{building.image}"
     
     return {
         "id": building.id,
@@ -240,7 +240,7 @@ async def update_building(
     db.refresh(building)
     
     # Generate image URL
-    image_url = f"/api/buildings/image/{building.image}" if building.image_data else None
+    image_url = f"api/buildings/image/{building.image}" if building.image_data else None
     
     return {
         "id": building.id,
@@ -295,7 +295,7 @@ async def update_building_data(
         "name": building.name,
         "department": building.department,
         "description": building.description,
-        "image": f"/api/buildings/image/{building.image}" if building.image else None,
+        "image": f"api/buildings/image/{building.image}" if building.image else None,
         "facilities": building.facilities,
         "coordinates": building.coordinates
     }
