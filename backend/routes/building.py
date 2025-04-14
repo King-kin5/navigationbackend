@@ -55,9 +55,9 @@ async def create_building(
         slug=slug,
         name=building_data.name,
         department=building_data.department,
-        description=building_data.description,
-        facilities=building_data.facilities,
-        coordinates=building_data.coordinates
+        description=building_data.description or "",
+        facilities=building_data.facilities or [],
+        coordinates=building_data.coordinates or {"lat": 0, "lng": 0}
     )
     
     try:

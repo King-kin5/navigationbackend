@@ -26,26 +26,28 @@ class BuildingBase(BaseModel):
 class BuildingCreate(BaseModel):
     name: str
     department: str
-    description: str
-    facilities: List[str]
-    coordinates: Dict[str, float]
+    description: Optional[str] = None
+    facilities: Optional[List[str]] = None
+    coordinates: Optional[Dict[str, float]] = None
 
     @validator('facilities')
     def validate_facilities(cls, v):
-        if not isinstance(v, list):
-            raise ValueError('Facilities must be a list')
-        if not all(isinstance(item, str) for item in v):
-            raise ValueError('All facilities must be strings')
+        if v is not None:
+            if not isinstance(v, list):
+                raise ValueError('Facilities must be a list')
+            if not all(isinstance(item, str) for item in v):
+                raise ValueError('All facilities must be strings')
         return v
 
     @validator('coordinates')
     def validate_coordinates(cls, v):
-        if not isinstance(v, dict):
-            raise ValueError('Coordinates must be a dictionary')
-        if 'lat' not in v or 'lng' not in v:
-            raise ValueError('Coordinates must contain lat and lng')
-        if not isinstance(v['lat'], (int, float)) or not isinstance(v['lng'], (int, float)):
-            raise ValueError('Coordinates values must be numbers')
+        if v is not None:
+            if not isinstance(v, dict):
+                raise ValueError('Coordinates must be a dictionary')
+            if 'lat' not in v or 'lng' not in v:
+                raise ValueError('Coordinates must contain lat and lng')
+            if not isinstance(v['lat'], (int, float)) or not isinstance(v['lng'], (int, float)):
+                raise ValueError('Coordinates values must be numbers')
         return v
 
 class BuildingUpdate(BaseModel):
