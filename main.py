@@ -28,13 +28,6 @@ def create_application() -> FastAPI:
         description="Navigation",
         version="0.1.0",
     )
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    STATIC_DIR = os.path.join(BASE_DIR, "static")
-    os.makedirs(os.path.join(STATIC_DIR, "images", "buildings"), exist_ok=True)
-
-    app.mount("/images", StaticFiles(directory=os.path.join(STATIC_DIR, "images")), name="images")
-    # Include the API routes
-    app.include_router(building.router, prefix="/buildings", tags=["buildings"])
     
     # Add CORS middleware
     app.add_middleware(
@@ -45,7 +38,18 @@ def create_application() -> FastAPI:
         allow_headers=["*"],  # Allows all headers
     )
     
-    return app  # Make sure to return the app!
+    # Create static directories
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    STATIC_DIR = os.path.join(BASE_DIR, "static")
+    os.makedirs(os.path.join(STATIC_DIR, "images", "buildings"), exist_ok=True)
+    
+    # Mount static files
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+    
+    # Include the API routes
+    app.include_router(building.router, prefix="/api", tags=["buildings"])
+    
+    return app
 
 # Create the application
 app = create_application()
@@ -77,6 +81,7 @@ async def shutdown_event():
     except Exception as e:
         logger.error(f"Application shutdown failed: {e}")
         raise
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(

@@ -9,14 +9,7 @@ import os
 
 logger = logging.getLogger(__name__)
 # Default to external database for local development
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql://navigation_xcm6_user:o78g9OPMJ33f62TfHga1R2K9yPWds1Ha@dpg-cvtq3oi4d50c73aloeg0-a.oregon-postgres.render.com/navigation_xcm6"
-)
-
-# Use the internal database URL in production
-if os.getenv("RENDER_INTERNAL_HOSTNAME"):  # Render sets this automatically
-    DATABASE_URL = "postgresql://navigation_xcm6_user:o78g9OPMJ33f62TfHga1R2K9yPWds1Ha@dpg-cvtq3oi4d50c73aloeg0-a/navigation_xcm6"
+DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/navigation"
 
 Base = declarative_base()
 

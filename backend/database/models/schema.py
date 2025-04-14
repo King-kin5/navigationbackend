@@ -1,37 +1,42 @@
 import json
 from pydantic import BaseModel, validator
-from typing import Optional, List
+from typing import Optional, Dict, List
 
 class BuildingBase(BaseModel):
+    id: str
+    slug: str
     name: str
     department: str
     description: str
-    image: Optional[str] = None
+    image: Optional[str] = None  # Will store base64 image data
+    image_data: Optional[bytes] = None
+    mime_type: Optional[str] = None
     facilities: Optional[List[str]] = None
-    coordinates: dict  # Now a dictionary
+    coordinates: Dict
 
-    # If coordinates come in as a JSON string, convert them to a dict.
-    @validator("coordinates", pre=True)
+    @validator('coordinates')
     def validate_coordinates(cls, v):
-        if isinstance(v, str):
-            try:
-                return json.loads(v)
-            except Exception:
-                raise ValueError("Invalid JSON for coordinates")
+        if not isinstance(v, dict):
+            raise ValueError('Coordinates must be a valid JSON object')
         return v
+
+    class Config:
+        orm_mode = True
 
 class BuildingCreate(BuildingBase):
     pass
 
 class BuildingUpdate(BaseModel):
+    id: Optional[str] = None
     slug: Optional[str] = None
     name: Optional[str] = None
     department: Optional[str] = None
     description: Optional[str] = None
-    facilities: Optional[List[str]] = None
     image: Optional[str] = None
-    coordinates: Optional[dict] = None  # Now a dictionary
+    image_data: Optional[bytes] = None
+    mime_type: Optional[str] = None
+    facilities: Optional[List[str]] = None
+    coordinates: Optional[Dict] = None
 
 class Building(BuildingBase):
-    class Config:
-        orm_mode = True
+    pass
