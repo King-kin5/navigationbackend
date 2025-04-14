@@ -9,8 +9,9 @@ import os
 
 logger = logging.getLogger(__name__)
 # Default to external database for local development
-DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/navigation"
-
+DATABASE_URL = "postgresql://navigation_cufj_user:YeFetbmeYBWnecx6fWqim57MqhqLVR4I@dpg-cvu5hh24d50c73aq8c50-a/navigation_cufj"
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 Base = declarative_base()
 
 def get_engine(url=DATABASE_URL):
