@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Response, Body
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Response, Body, Request
 from sqlalchemy.orm import Session
 import json
 import base64
@@ -186,11 +186,7 @@ def get_building_by_slug(slug: str, db: Session = Depends(get_db)):
 @router.put("/{slug}", response_model=BuildingBase)
 async def update_building(
     slug: str,
-    name: Optional[str] = Body(None),
-    department: Optional[str] = Body(None),
-    description: Optional[str] = Body(None),
-    facilities: Optional[List[str]] = Body(None),
-    coordinates: Optional[Dict] = Body(None),
+    request: Request,
     file: Optional[UploadFile] = File(None, description="Optional image file"),
     db: Session = Depends(get_db)
 ):
@@ -198,6 +194,12 @@ async def update_building(
     
     if not building:
         raise HTTPException(status_code=404, detail="Building not found")
+    
+    # Get JSON data from request body
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
     
     # Process image if uploaded
     if file and file.filename:
@@ -218,16 +220,23 @@ async def update_building(
             raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
     
     # Update only the fields that were provided
-    if name is not None:
-        building.name = name
-    if department is not None:
-        building.department = department
-    if description is not None:
-        building.description = description
-    if facilities is not None:
-        building.facilities = facilities
-    if coordinates is not None:
-        building.coordinates = coordinates
+    if "name" in data:
+        building.name = data["name"]
+    if "department" in data:
+        building.department = data["department"]
+    if "description" in data:
+        building.description = data["description"]
+    if "facilities" in data:
+        building.facilities = data["facilities"]
+    if "coordinates" in data:
+        coords = data["coordinates"]
+        if not isinstance(coords, dict):
+            raise HTTPException(status_code=400, detail="Coordinates must be a dictionary")
+        if "lat" not in coords or "lng" not in coords:
+            raise HTTPException(status_code=400, detail="Coordinates must contain 'lat' and 'lng' keys")
+        if not isinstance(coords["lat"], (int, float)) or not isinstance(coords["lng"], (int, float)):
+            raise HTTPException(status_code=400, detail="Coordinates values must be numbers")
+        building.coordinates = coords
     
     db.commit()
     db.refresh(building)
