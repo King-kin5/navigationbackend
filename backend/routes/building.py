@@ -9,7 +9,7 @@ from backend.database.models.building import Building
 from backend.database.models.schema import BuildingBase, BuildingCreate, BuildingUpdate
 from backend.seed_data import slugify
 from backend.utils.image_utils import process_uploaded_image, validate_image_file
-from typing import Optional, List
+from typing import Optional, List, Dict
 from fastapi.staticfiles import StaticFiles
 
 router = APIRouter()
@@ -190,7 +190,7 @@ async def update_building(
     department: Optional[str] = Form(None),
     description: Optional[str] = Form(None),
     facilities: Optional[List[str]] = Form(None),
-    coordinates: Optional[str] = Form(None),
+    coordinates: Optional[Dict] = Form(None),
     file: Optional[UploadFile] = File(None, description="Optional image file"),
     db: Session = Depends(get_db)
 ):
@@ -227,10 +227,7 @@ async def update_building(
     if facilities is not None:
         building.facilities = facilities
     if coordinates is not None:
-        try:
-            building.coordinates = json.loads(coordinates)
-        except json.JSONDecodeError:
-            raise HTTPException(status_code=400, detail="Invalid coordinates format")
+        building.coordinates = coordinates
     
     db.commit()
     db.refresh(building)
