@@ -189,8 +189,8 @@ async def update_building(
     name: Optional[str] = Form(None),
     department: Optional[str] = Form(None),
     description: Optional[str] = Form(None),
-    facilities: Optional[List[str]] = Form(None),
-    coordinates: Optional[Dict] = Body(None),
+    facilities: Optional[str] = Form(None),
+    coordinates: Optional[str] = Form(None),
     file: Optional[UploadFile] = File(None, description="Optional image file"),
     db: Session = Depends(get_db)
 ):
@@ -225,9 +225,21 @@ async def update_building(
     if description is not None:
         building.description = description
     if facilities is not None:
-        building.facilities = facilities
+        try:
+            parsed_facilities = json.loads(facilities)
+            if not isinstance(parsed_facilities, list):
+                raise HTTPException(status_code=400, detail="Facilities must be a list")
+            building.facilities = parsed_facilities
+        except json.JSONDecodeError:
+            raise HTTPException(status_code=400, detail="Invalid facilities format")
     if coordinates is not None:
-        building.coordinates = coordinates
+        try:
+            parsed_coordinates = json.loads(coordinates)
+            if not isinstance(parsed_coordinates, dict):
+                raise HTTPException(status_code=400, detail="Coordinates must be a dictionary")
+            building.coordinates = parsed_coordinates
+        except json.JSONDecodeError:
+            raise HTTPException(status_code=400, detail="Invalid coordinates format")
     
     db.commit()
     db.refresh(building)

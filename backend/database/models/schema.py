@@ -12,11 +12,11 @@ class BuildingBase(BaseModel):
     image_data: Optional[bytes] = None
     mime_type: Optional[str] = None
     facilities: Optional[List[str]] = None
-    coordinates: Dict
+    coordinates: Optional[Dict] = None
 
     @validator('coordinates')
     def validate_coordinates(cls, v):
-        if not isinstance(v, dict):
+        if v is not None and not isinstance(v, dict):
             raise ValueError('Coordinates must be a valid JSON object')
         return v
 
@@ -42,6 +42,17 @@ class BuildingUpdate(BaseModel):
     def validate_coordinates(cls, v):
         if v is not None and not isinstance(v, dict):
             raise ValueError('Coordinates must be a valid JSON object')
+        return v
+
+    @validator('facilities')
+    def validate_facilities(cls, v):
+        if v is not None:
+            try:
+                parsed = json.loads(v)
+                if not isinstance(parsed, list):
+                    raise ValueError('Facilities must be a valid JSON array')
+            except json.JSONDecodeError:
+                raise ValueError('Invalid facilities format')
         return v
 
     class Config:
