@@ -186,7 +186,11 @@ def get_building_by_slug(slug: str, db: Session = Depends(get_db)):
 @router.put("/{slug}", response_model=BuildingBase)
 async def update_building(
     slug: str,
-    building_data: BuildingUpdate = Body(...),
+    name: Optional[str] = Body(None),
+    department: Optional[str] = Body(None),
+    description: Optional[str] = Body(None),
+    facilities: Optional[List[str]] = Body(None),
+    coordinates: Optional[Dict] = Body(None),
     file: Optional[UploadFile] = File(None, description="Optional image file"),
     db: Session = Depends(get_db)
 ):
@@ -214,16 +218,16 @@ async def update_building(
             raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
     
     # Update only the fields that were provided
-    if building_data.name is not None:
-        building.name = building_data.name
-    if building_data.department is not None:
-        building.department = building_data.department
-    if building_data.description is not None:
-        building.description = building_data.description
-    if building_data.facilities is not None:
-        building.facilities = building_data.facilities
-    if building_data.coordinates is not None:
-        building.coordinates = building_data.coordinates
+    if name is not None:
+        building.name = name
+    if department is not None:
+        building.department = department
+    if description is not None:
+        building.description = description
+    if facilities is not None:
+        building.facilities = facilities
+    if coordinates is not None:
+        building.coordinates = coordinates
     
     db.commit()
     db.refresh(building)
