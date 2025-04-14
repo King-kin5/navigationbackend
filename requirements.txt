@@ -9,4 +9,4 @@ pydantic_settings
 pydantic
 python-multipart  
 aiofiles     
-PIL == 11.2.1
+Pillow==10.2.0
