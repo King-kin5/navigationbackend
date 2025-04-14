@@ -227,8 +227,12 @@ async def update_building(
     if facilities is not None:
         building.facilities = facilities
     if coordinates is not None:
-        if not isinstance(coordinates, dict) or 'lat' not in coordinates or 'lng' not in coordinates:
-            raise HTTPException(status_code=400, detail="Coordinates must be a dictionary with 'lat' and 'lng' keys")
+        if not isinstance(coordinates, dict):
+            raise HTTPException(status_code=400, detail="Coordinates must be a dictionary")
+        if 'lat' not in coordinates or 'lng' not in coordinates:
+            raise HTTPException(status_code=400, detail="Coordinates must contain 'lat' and 'lng' keys")
+        if not isinstance(coordinates['lat'], (int, float)) or not isinstance(coordinates['lng'], (int, float)):
+            raise HTTPException(status_code=400, detail="Coordinates values must be numbers")
         building.coordinates = coordinates
     
     db.commit()
