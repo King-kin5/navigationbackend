@@ -38,62 +38,26 @@ def delete_building_image(slug: str, db: Session = Depends(get_db)):
 
 @router.post("/buildings/create", response_model=BuildingBase)
 async def create_building(
-    name: str = Body(...),
-    department: str = Body(...),
-    description: str = Body(...),
-    facilities: List[str] = Body(...),
-    coordinates: dict = Body(...),
-    file: Optional[UploadFile] = File(None, description="Optional image file"),
+    building_data: BuildingCreate,
     db: Session = Depends(get_db)
 ):
     # Generate slug from name
-    slug = slugify(name)
+    slug = slugify(building_data.name)
     
     # Check for existing building
     existing = db.query(Building).filter(Building.slug == slug).first()
     if existing:
         raise HTTPException(status_code=400, detail="Building with this slug already exists")
 
-    # Validate coordinates
-    if not isinstance(coordinates, dict):
-        raise HTTPException(status_code=400, detail="Coordinates must be a dictionary")
-    if "lat" not in coordinates or "lng" not in coordinates:
-        raise HTTPException(status_code=400, detail="Coordinates must contain 'lat' and 'lng' keys")
-    if not isinstance(coordinates["lat"], (int, float)) or not isinstance(coordinates["lng"], (int, float)):
-        raise HTTPException(status_code=400, detail="Coordinates values must be numbers")
-
-    # Process image if uploaded
-    image_filename = None
-    image_url = None
-    image_data = None
-    mime_type = None
-    
-    if file:
-        try:
-            # Validate image file
-            if not validate_image_file(file):
-                raise HTTPException(status_code=400, detail="Invalid image file type")
-            
-            # Process the image
-            filename, image_data, mime_type = await process_uploaded_image(file)
-            image_filename = filename
-            image_url = f"/api/buildings/image/{filename}"
-            
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
-    
     # Create building object
     building = Building(
         id=slug,
         slug=slug,
-        name=name,
-        department=department,
-        description=description,
-        image=image_filename,
-        image_data=image_data,
-        mime_type=mime_type,
-        facilities=facilities,
-        coordinates=coordinates
+        name=building_data.name,
+        department=building_data.department,
+        description=building_data.description,
+        facilities=building_data.facilities,
+        coordinates=building_data.coordinates
     )
     
     try:
@@ -110,7 +74,49 @@ async def create_building(
         "name": building.name,
         "department": building.department,
         "description": building.description,
-        "image": image_url,
+        "image": None,
+        "facilities": building.facilities,
+        "coordinates": building.coordinates
+    }
+
+@router.post("/buildings/{slug}/image", response_model=BuildingBase)
+async def add_building_image(
+    slug: str,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    # Find the building
+    building = db.query(Building).filter(Building.slug == slug).first()
+    if not building:
+        raise HTTPException(status_code=404, detail="Building not found")
+
+    try:
+        # Validate image file
+        if not validate_image_file(file):
+            raise HTTPException(status_code=400, detail="Invalid image file type")
+        
+        # Process the image
+        filename, image_data, mime_type = await process_uploaded_image(file)
+        
+        # Update building with image data
+        building.image = filename
+        building.image_data = image_data
+        building.mime_type = mime_type
+        
+        db.commit()
+        db.refresh(building)
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
+
+    return {
+        "id": building.id,
+        "slug": building.slug,
+        "name": building.name,
+        "department": building.department,
+        "description": building.description,
+        "image": f"/api/buildings/image/{building.image}",
         "facilities": building.facilities,
         "coordinates": building.coordinates
     }
