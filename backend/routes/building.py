@@ -38,16 +38,12 @@ def delete_building_image(slug: str, db: Session = Depends(get_db)):
 
 @router.post("/buildings/create", response_model=BuildingBase)
 async def create_building(
-    name: str = Form(...),
-    department: str = Form(...),
-    description: str = Form(...),
-    facilities: str = Form(...),
-    coordinates: str = Form(...),
-    file: Optional[UploadFile] = File(None),
+    building_data: BuildingCreate = Body(...),
+    file: Optional[UploadFile] = File(None, description="Optional image file"),
     db: Session = Depends(get_db)
 ):
     # Generate slug from name
-    slug = slugify(name)
+    slug = slugify(building_data.name)
     
     # Check for existing building
     existing = db.query(Building).filter(Building.slug == slug).first()
@@ -57,6 +53,8 @@ async def create_building(
     # Process image if uploaded
     image_filename = None
     image_url = None
+    image_data = None
+    mime_type = None
     
     if file:
         try:
@@ -66,51 +64,33 @@ async def create_building(
             
             # Process the image
             filename, image_data, mime_type = await process_uploaded_image(file)
-            
-            # Create building object with image data
-            building = Building(
-                id=slug,
-                slug=slug,
-                name=name,
-                department=department,
-                description=description,
-                image=filename,  # Store filename
-                image_data=image_data,  # Store binary data
-                mime_type=mime_type,  # Store MIME type
-                facilities=json.loads(facilities),
-                coordinates=json.loads(coordinates)
-            )
-            
-            # Save to database
-            db.add(building)
-            db.commit()
-            db.refresh(building)
-            
-            # Generate image URL
+            image_filename = filename
             image_url = f"/api/buildings/image/{filename}"
             
         except Exception as e:
-            db.rollback()
             raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
-    else:
-        # Create building without image
-        building = Building(
-            id=slug,
-            slug=slug,
-            name=name,
-            department=department,
-            description=description,
-            facilities=json.loads(facilities),
-            coordinates=json.loads(coordinates)
-        )
-        
-        try:
-            db.add(building)
-            db.commit()
-            db.refresh(building)
-        except Exception as e:
-            db.rollback()
-            raise HTTPException(status_code=500, detail=f"Error saving building: {str(e)}")
+    
+    # Create building object
+    building = Building(
+        id=slug,
+        slug=slug,
+        name=building_data.name,
+        department=building_data.department,
+        description=building_data.description,
+        image=image_filename,
+        image_data=image_data,
+        mime_type=mime_type,
+        facilities=building_data.facilities,
+        coordinates=building_data.coordinates
+    )
+    
+    try:
+        db.add(building)
+        db.commit()
+        db.refresh(building)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error saving building: {str(e)}")
 
     return {
         "id": building.id,
@@ -237,6 +217,46 @@ async def update_building(
         if not isinstance(coords["lat"], (int, float)) or not isinstance(coords["lng"], (int, float)):
             raise HTTPException(status_code=400, detail="Coordinates values must be numbers")
         building.coordinates = coords
+    
+    db.commit()
+    db.refresh(building)
+    
+    # Generate image URL
+    image_url = f"/api/buildings/image/{building.image}" if building.image_data else None
+    
+    return {
+        "id": building.id,
+        "slug": building.slug,
+        "name": building.name,
+        "department": building.department,
+        "description": building.description,
+        "image": image_url,
+        "facilities": building.facilities,
+        "coordinates": building.coordinates if building.coordinates else {}
+    }
+
+@router.put("/{slug}/data", response_model=BuildingBase)
+async def update_building_data(
+    slug: str,
+    building_data: BuildingUpdate,
+    db: Session = Depends(get_db)
+):
+    building = db.query(Building).filter(Building.slug == slug).first()
+    
+    if not building:
+        raise HTTPException(status_code=404, detail="Building not found")
+    
+    # Update only the fields that were provided
+    if building_data.name is not None:
+        building.name = building_data.name
+    if building_data.department is not None:
+        building.department = building_data.department
+    if building_data.description is not None:
+        building.description = building_data.description
+    if building_data.facilities is not None:
+        building.facilities = building_data.facilities
+    if building_data.coordinates is not None:
+        building.coordinates = building_data.coordinates
     
     db.commit()
     db.refresh(building)
