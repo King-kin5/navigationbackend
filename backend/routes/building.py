@@ -186,11 +186,7 @@ def get_building_by_slug(slug: str, db: Session = Depends(get_db)):
 @router.put("/{slug}", response_model=BuildingBase)
 async def update_building(
     slug: str,
-    name: Optional[str] = Form(None),
-    department: Optional[str] = Form(None),
-    description: Optional[str] = Form(None),
-    facilities: Optional[str] = Form(None),
-    coordinates: Optional[str] = Form(None),
+    building_data: BuildingUpdate = Body(...),
     file: Optional[UploadFile] = File(None, description="Optional image file"),
     db: Session = Depends(get_db)
 ):
@@ -218,28 +214,16 @@ async def update_building(
             raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
     
     # Update only the fields that were provided
-    if name is not None:
-        building.name = name
-    if department is not None:
-        building.department = department
-    if description is not None:
-        building.description = description
-    if facilities is not None:
-        try:
-            parsed_facilities = json.loads(facilities)
-            if not isinstance(parsed_facilities, list):
-                raise HTTPException(status_code=400, detail="Facilities must be a list")
-            building.facilities = parsed_facilities
-        except json.JSONDecodeError:
-            raise HTTPException(status_code=400, detail="Invalid facilities format")
-    if coordinates is not None:
-        try:
-            parsed_coordinates = json.loads(coordinates)
-            if not isinstance(parsed_coordinates, dict):
-                raise HTTPException(status_code=400, detail="Coordinates must be a dictionary")
-            building.coordinates = parsed_coordinates
-        except json.JSONDecodeError:
-            raise HTTPException(status_code=400, detail="Invalid coordinates format")
+    if building_data.name is not None:
+        building.name = building_data.name
+    if building_data.department is not None:
+        building.department = building_data.department
+    if building_data.description is not None:
+        building.description = building_data.description
+    if building_data.facilities is not None:
+        building.facilities = building_data.facilities
+    if building_data.coordinates is not None:
+        building.coordinates = building_data.coordinates
     
     db.commit()
     db.refresh(building)
